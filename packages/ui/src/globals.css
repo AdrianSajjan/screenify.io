@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 30, 98%, 64%;
+    --background: 36, 100%, 93%;
+
+    --overlay: 0, 0%, 0%, 0.8;
+    --overlay-light: 0, 0%, 0%, 0.2;
+
+    --light: 0, 0%, 100%;
+    --blank: 0, 0%, 0%;
+    --border: 0, 0%, 0%;
+    --text: 0, 0%, 0%;
+
+    --ring: 30, 98%, 64%, 0.75;
+    --ring-offset: 0, 0%, 100%;
+    --secondary-dark: 0, 0%, 13%;
+
+    --box-shadow-x: 4px;
+    --box-shadow-y: 4px;
+    --reverse-box-shadow-x: -4px;
+    --reverse-box-shadow-y: -4px;
+
+    --base-font-weight: 500;
+    --heading-font-weight: 700;
+
+    --z-base: 9999;
+    --border-radius: 4px;
+    --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px hsl(var(--border));
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-light text-text;
+  }
+}
