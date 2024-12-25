@@ -24,14 +24,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@scree
 import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dimensions";
 import { recorder } from "@screenify.io/recorder/store/recorder";
 import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
+import { measureElement } from "@screenify.io/recorder/lib/utils";
 
 const PluginToolbar = observer(() => {
-  const toolbarRef = useRef<HTMLDivElement>(null!);
+  const toolbar$ = useRef<HTMLDivElement>(null!);
 
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
-
-  const toolbarHeight = toolbarRef.current?.getBoundingClientRect().height || 40;
-  const toolbarWidth = toolbarRef.current?.getBoundingClientRect().width || 200;
+  const { height: toolbarHeight, width: toolbarWidth } = measureElement(toolbar$.current, { height: 40, width: 200 });
 
   const defaultPosition = {
     x: SAFE_AREA_PADDING,
@@ -39,15 +38,15 @@ const PluginToolbar = observer(() => {
   };
 
   const bounds = {
-    left: SAFE_AREA_PADDING,
     top: SAFE_AREA_PADDING,
+    left: SAFE_AREA_PADDING,
     right: screenWidth - SAFE_AREA_PADDING - toolbarWidth,
     bottom: screenHeight - SAFE_AREA_PADDING - toolbarHeight,
   };
 
   return (
-    <Draggable nodeRef={toolbarRef} handle="#toolbar-handle" defaultPosition={defaultPosition} bounds={bounds}>
-      <Card ref={toolbarRef} className="w-fit absolute bg-background overflow-hidden flex items-center h-10">
+    <Draggable nodeRef={toolbar$} handle="#toolbar-handle" defaultPosition={defaultPosition} bounds={bounds}>
+      <Card ref={toolbar$} className="w-fit absolute bg-background overflow-hidden flex items-center h-10">
         <TooltipProvider disableHoverableContent delayDuration={300}>
           <div className="px-1.5 bg-primary/80 h-10 grid place-items-center cursor-move">
             <GripVerticalIcon id="toolbar-handle" size={16} />

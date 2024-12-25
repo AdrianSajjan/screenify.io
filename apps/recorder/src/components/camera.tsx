@@ -9,8 +9,11 @@ import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dim
 import { camera } from "@screenify.io/recorder/store/camera";
 
 const CameraPreviewHOC = observer(() => {
-  if (camera.device === "n/a") return null;
-  return <CameraPreview />;
+  if (camera.device !== "n/a") {
+    return <CameraPreview />;
+  } else {
+    return null;
+  }
 });
 
 const CameraPreview = observer(() => {

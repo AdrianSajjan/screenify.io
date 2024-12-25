@@ -21,16 +21,33 @@ import { MicrophonePlugin } from "@screenify.io/recorder/components/plugins/micr
 import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
 import { camera } from "@screenify.io/recorder/store/camera";
 import { recorder } from "@screenify.io/recorder/store/recorder";
+import { measureElement } from "@screenify.io/recorder/lib/utils";
+
+const PluginCardHOC = observer(() => {
+  if (recorder.status === "idle" || recorder.status === "pending" || recorder.status === "error") {
+    return <PluginCard />;
+  } else {
+    return null;
+  }
+});
 
 const PluginCard = observer(() => {
-  const pluginRef = useRef<HTMLDivElement>(null!);
-
+  const plugin$ = useRef<HTMLDivElement>(null!);
   const cameras = useFetchUserCameraDevices();
 
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
+  const { height: pluginHeight, width: pluginWidth } = measureElement(plugin$.current, { height: 526, width: 448 });
 
-  const pluginWidth = pluginRef.current?.getBoundingClientRect().width || 448;
-  const pluginHeight = pluginRef.current?.getBoundingClientRect().height || 526;
+  const handleScreenCapture = () => {
+    switch (recorder.status) {
+      case "pending":
+        recorder.cancelScreenCapture();
+        break;
+      case "idle":
+        recorder.startScreenCapture();
+        break;
+    }
+  };
 
   const defaultPosition = {
     x: screenWidth - pluginWidth - SAFE_AREA_PADDING,
@@ -45,9 +62,9 @@ const PluginCard = observer(() => {
   };
 
   return (
-    <Draggable nodeRef={pluginRef} handle="#plugin-handle" defaultPosition={defaultPosition} bounds={bounds}>
-      <Card ref={pluginRef} className="absolute p-0 bg-background w-full max-w-md overflow-hidden">
-        <Tabs defaultValue="record">
+    <Draggable nodeRef={plugin$} handle="#plugin-handle" defaultPosition={defaultPosition} bounds={bounds}>
+      <Tabs ref={plugin$} defaultValue="record" className="w-full max-w-md">
+        <Card className="absolute p-0 bg-background w-full overflow-hidden animate-in fade-in-0 zoom-in-75">
           <CardHeader className="p-0 space-y-0">
             <div className="cursor-move w-full p-2 grid place-items-center" id="plugin-handle">
               <GripHorizontalIcon size={16} />
@@ -134,9 +151,9 @@ const PluginCard = observer(() => {
             </CardContent>
             <Separator variant="thick" />
             <CardFooter className="pt-5">
-              <Button className="w-full justify-between" onClick={recorder.captureScreen}>
+              <Button className="w-full justify-between" onClick={handleScreenCapture}>
                 <span className="invisible text-xs">⌥⇧D</span>
-                <span className="font-bold">Start Recording</span>
+                <span className="font-bold">{recorder.status === "pending" ? "Cancel Recording" : "Start Recording"}</span>
                 <span className="visible text-xs">⌥⇧D</span>
               </Button>
             </CardFooter>
@@ -144,10 +161,10 @@ const PluginCard = observer(() => {
           <TabsContent value="video" className="mt-0">
             <div className="p-8 grid place-items-center">Coming Soon!</div>
           </TabsContent>
-        </Tabs>
-      </Card>
+        </Card>
+      </Tabs>
     </Draggable>
   );
 });
 
-export { PluginCard };
+export { PluginCardHOC as PluginCard };

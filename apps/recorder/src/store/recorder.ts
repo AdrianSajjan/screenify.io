@@ -1,20 +1,28 @@
 import exportWebmBlob from "fix-webm-duration";
 import { makeAutoObservable, runInAction } from "mobx";
+import { RECORD_TIMEOUT } from "@screenify.io/recorder/constants/recorder";
 
 class Recorder {
   timestamp: number;
   status: "idle" | "active" | "pending" | "saving" | "paused" | "error";
 
-  private timeout: number | null;
+  private stream: MediaStream | null;
   private recorder: MediaRecorder | null;
   private chunks: Blob[];
 
+  private interval: number | null;
+  private timeout: number | null;
+
   constructor() {
     this.status = "idle";
-    this.recorder = null;
-    this.timeout = null;
     this.timestamp = 0;
+
+    this.recorder = null;
     this.chunks = [];
+    this.stream = null;
+
+    this.interval = null;
+    this.timeout = null;
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -29,17 +37,17 @@ class Recorder {
   }
 
   private __startTimer() {
-    if (!this.timeout) {
-      this.timeout = setInterval(() => {
+    if (!this.interval) {
+      this.interval = setInterval(() => {
         runInAction(() => (this.timestamp += 1));
       }, 1000);
     }
   }
 
   private __stopTimer(reset?: boolean) {
-    if (this.timeout) clearInterval(this.timeout);
+    if (this.interval) clearInterval(this.interval);
     if (reset) this.timestamp = 0;
-    this.timeout = null;
+    this.interval = null;
   }
 
   private __recorderDataAvailable(event: BlobEvent) {
@@ -61,6 +69,7 @@ class Recorder {
 
   private __captureStreamSuccess(stream: MediaStream) {
     this.status = "active";
+    this.stream = stream;
     this.recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9,opus" });
     this.recorder.addEventListener("dataavailable", this.__recorderDataAvailable);
     this.recorder.addEventListener("stop", this.__recorderDataSaved);
@@ -73,9 +82,11 @@ class Recorder {
     this.__stopTimer(true);
   }
 
-  captureScreen() {
+  startScreenCapture() {
     this.status = "pending";
-    navigator.mediaDevices.getDisplayMedia({ video: true }).then(this.__captureStreamSuccess).catch(this.__captureStreamError);
+    this.timeout = setTimeout(() => {
+      navigator.mediaDevices.getDisplayMedia({ video: true }).then(this.__captureStreamSuccess).catch(this.__captureStreamError);
+    }, RECORD_TIMEOUT * 1000);
   }
 
   stopScreenCapture() {
@@ -86,6 +97,16 @@ class Recorder {
       this.recorder.stop();
       this.status = "saving";
     }
+
+    if (this.stream) {
+      this.stream.getTracks().forEach((track) => track.stop());
+      this.stream = null;
+    }
+  }
+
+  cancelScreenCapture() {
+    if (this.timeout) clearTimeout(this.timeout);
+    this.status = "idle";
   }
 
   pauseScreenCapture() {
