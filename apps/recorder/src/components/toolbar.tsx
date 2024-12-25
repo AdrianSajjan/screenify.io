@@ -18,49 +18,36 @@ import { useRef } from "react";
 import { Button } from "@screenify.io/ui/components/ui/button";
 import { Card } from "@screenify.io/ui/components/ui/card";
 import { Separator } from "@screenify.io/ui/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@screenify.io/ui/components/ui/tooltip";
-import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
-import { useCoreStore } from "@screenify.io/recorder/store/core";
-import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dimensions";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@screenify.io/ui/components/ui/tooltip";
 
-export function PluginToolbar() {
+import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dimensions";
+import { recorder } from "@screenify.io/recorder/store/recorder";
+import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
+import { observer } from "mobx-react";
+
+function _PluginToolbar() {
   const toolbarRef = useRef<HTMLDivElement>(null!);
 
-  const { recording, setRecording } = useCoreStore();
-  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const { height: screenHeight, width: screenWidth } = useWindowDimensions();
 
-  const toolbarHeight =
-    toolbarRef.current?.getBoundingClientRect().height || 40;
+  const toolbarHeight = toolbarRef.current?.getBoundingClientRect().height || 40;
   const toolbarWidth = toolbarRef.current?.getBoundingClientRect().width || 200;
 
   const defaultPosition = {
     x: SAFE_AREA_PADDING,
-    y: windowHeight - SAFE_AREA_PADDING - toolbarHeight,
+    y: screenHeight - SAFE_AREA_PADDING - toolbarHeight,
   };
 
   const bounds = {
     left: SAFE_AREA_PADDING,
     top: SAFE_AREA_PADDING,
-    right: windowWidth - SAFE_AREA_PADDING - toolbarWidth,
-    bottom: windowHeight - SAFE_AREA_PADDING - toolbarHeight,
+    right: screenWidth - SAFE_AREA_PADDING - toolbarWidth,
+    bottom: screenHeight - SAFE_AREA_PADDING - toolbarHeight,
   };
 
   return (
-    <Draggable
-      nodeRef={toolbarRef}
-      handle="#toolbar-handle"
-      defaultPosition={defaultPosition}
-      bounds={bounds}
-    >
-      <Card
-        ref={toolbarRef}
-        className="w-fit absolute bg-background overflow-hidden flex items-center h-10"
-      >
+    <Draggable nodeRef={toolbarRef} handle="#toolbar-handle" defaultPosition={defaultPosition} bounds={bounds}>
+      <Card ref={toolbarRef} className="w-fit absolute bg-background overflow-hidden flex items-center h-10">
         <TooltipProvider disableHoverableContent delayDuration={300}>
           <div className="px-1.5 bg-primary/80 h-10 grid place-items-center cursor-move">
             <GripVerticalIcon id="toolbar-handle" size={16} />
@@ -73,6 +60,7 @@ export function PluginToolbar() {
               <Button
                 variant="no-shadow"
                 className="h-10 w-10 grid place-items-center border-0 bg-background hover:bg-primary rounded-none"
+                onClick={recorder.stopScreenCapture}
               >
                 <ArrowDownToLineIcon size={20} />
               </Button>
@@ -82,13 +70,13 @@ export function PluginToolbar() {
             </TooltipContent>
           </Tooltip>
           <Separator orientation="vertical" />
-          {recording ? (
+          {recorder.status === "active" ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="no-shadow"
                   className="h-10 w-10 grid place-items-center border-0 bg-background hover:bg-primary rounded-none"
-                  onClick={() => setRecording(false)}
+                  onClick={recorder.pauseScreenCapture}
                 >
                   <PauseIcon size={20} />
                 </Button>
@@ -103,7 +91,7 @@ export function PluginToolbar() {
                 <Button
                   variant="no-shadow"
                   className="h-10 w-10 grid place-items-center border-0 bg-background hover:bg-primary rounded-none"
-                  onClick={() => setRecording(true)}
+                  onClick={recorder.resumeScreenCapture}
                 >
                   <PlayIcon size={20} />
                 </Button>
@@ -216,3 +204,7 @@ export function PluginToolbar() {
     </Draggable>
   );
 }
+
+const PluginToolbar = observer(_PluginToolbar);
+
+export { PluginToolbar };

@@ -1,91 +1,55 @@
 import Draggable from "react-draggable";
 
-import {
-  GripHorizontalIcon,
-  LayoutGridIcon,
-  MicIcon,
-  MicOffIcon,
-  VideoIcon,
-  VideoOffIcon,
-} from "lucide-react";
+import { useRef } from "react";
+import { GripHorizontalIcon, LayoutGridIcon, MicIcon, MicOffIcon, VideoIcon, VideoOffIcon } from "lucide-react";
+import { observer } from "mobx-react";
 
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@screenify.io/ui/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@screenify.io/ui/components/ui/accordion";
 import { Badge } from "@screenify.io/ui/components/ui/badge";
 import { Button } from "@screenify.io/ui/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@screenify.io/ui/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@screenify.io/ui/components/ui/card";
 import { Label } from "@screenify.io/ui/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@screenify.io/ui/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@screenify.io/ui/components/ui/select";
 import { Separator } from "@screenify.io/ui/components/ui/separator";
 import { Switch } from "@screenify.io/ui/components/ui/switch";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@screenify.io/ui/components/ui/tabs";
-import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
-import { useRef } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@screenify.io/ui/components/ui/tabs";
+
 import { useFetchUserCameraDevices } from "@screenify.io/recorder/hooks/use-camera";
 import { useFetchUserMicrophoneDevices } from "@screenify.io/recorder/hooks/use-microphone";
-import { usePreferenceStore } from "@screenify.io/recorder/store/preference";
-import { useCoreStore } from "@screenify.io/recorder/store/core";
 import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dimensions";
 
-export function PluginCard() {
+import { camera } from "@screenify.io/recorder/store/camera";
+import { recorder } from "@screenify.io/recorder/store/recorder";
+import { microphone } from "@screenify.io/recorder/store/microphone";
+import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
+
+const PluginCard = observer(() => {
   const pluginRef = useRef<HTMLDivElement>(null!);
 
   const cameras = useFetchUserCameraDevices();
   const microphones = useFetchUserMicrophoneDevices();
 
-  const { recording, setRecording } = useCoreStore();
-  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
-  const { camera, microphone, setCamera, setMicrophone } = usePreferenceStore();
+  const { height: screenHeight, width: screenWidth } = useWindowDimensions();
 
   const pluginWidth = pluginRef.current?.getBoundingClientRect().width || 448;
   const pluginHeight = pluginRef.current?.getBoundingClientRect().height || 526;
 
   const defaultPosition = {
-    x: windowWidth - pluginWidth - SAFE_AREA_PADDING,
+    x: screenWidth - pluginWidth - SAFE_AREA_PADDING,
     y: SAFE_AREA_PADDING,
   };
 
   const bounds = {
     left: SAFE_AREA_PADDING,
     top: SAFE_AREA_PADDING,
-    right: windowWidth - pluginWidth - SAFE_AREA_PADDING,
-    bottom: windowHeight - pluginHeight - SAFE_AREA_PADDING,
+    right: screenWidth - pluginWidth - SAFE_AREA_PADDING,
+    bottom: screenHeight - pluginHeight - SAFE_AREA_PADDING,
   };
 
   return (
-    <Draggable
-      nodeRef={pluginRef}
-      handle="#plugin-handle"
-      defaultPosition={defaultPosition}
-      bounds={bounds}
-    >
-      <Card
-        ref={pluginRef}
-        className="absolute p-0 bg-background w-full max-w-md overflow-hidden"
-      >
-        <CardHeader
-          id="plugin-handle"
-          className="grid place-items-center p-2 cursor-move"
-        >
+    <Draggable nodeRef={pluginRef} handle="#plugin-handle" defaultPosition={defaultPosition} bounds={bounds}>
+      <Card ref={pluginRef} className="absolute p-0 bg-background w-full max-w-md overflow-hidden">
+        <CardHeader id="plugin-handle" className="grid place-items-center p-2 cursor-move">
           <GripHorizontalIcon size={16} />
         </CardHeader>
         <Separator />
@@ -103,42 +67,22 @@ export function PluginCard() {
           <Separator />
           <TabsContent value="record" className="mt-0">
             <CardContent className="p-0">
-              <Accordion
-                type="multiple"
-                className="w-full max-h-96 overflow-auto"
-              >
-                <AccordionItem
-                  value="camera"
-                  className="shadow-none border-0 rounded-none"
-                >
-                  <AccordionTrigger className="bg-background">
-                    Camera
-                  </AccordionTrigger>
+              <Accordion type="multiple" className="w-full max-h-96 overflow-auto">
+                <AccordionItem value="camera" className="shadow-none border-0 rounded-none">
+                  <AccordionTrigger className="bg-background">Camera</AccordionTrigger>
                   <AccordionContent className="bg-background p-6 space-y-5">
-                    <Select value={camera} onValueChange={setCamera}>
+                    <Select value={camera.device} onValueChange={camera.changeDevice}>
                       <SelectTrigger className="">
                         <div className="flex items-center gap-2 flex-1">
-                          {camera === "n/a" ? (
-                            <VideoOffIcon size={20} />
-                          ) : (
-                            <VideoIcon size={20} />
-                          )}
-                          {camera === "n/a"
-                            ? "No Camera"
-                            : cameras.find((c) => c.deviceId === camera)
-                                ?.label || "Select Camera"}
-                          {camera === "n/a" ? (
-                            <Badge className="ml-auto rounded-full">Off</Badge>
-                          ) : null}
+                          {camera.device === "n/a" ? <VideoOffIcon size={20} /> : <VideoIcon size={20} />}
+                          {camera.device === "n/a" ? "No Camera" : cameras.find((c) => c.deviceId === camera.device)?.label}
+                          {camera.device === "n/a" ? <Badge className="ml-auto rounded-full">Off</Badge> : null}
                         </div>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="n/a">No Camera</SelectItem>
                         {cameras.map((camera, index) => (
-                          <SelectItem
-                            key={camera.deviceId}
-                            value={camera.deviceId}
-                          >
+                          <SelectItem key={camera.deviceId} value={camera.deviceId}>
                             {camera.label || `Camera ${index + 1}`}
                           </SelectItem>
                         ))}
@@ -146,43 +90,26 @@ export function PluginCard() {
                     </Select>
                     <div className="flex items-center justify-between gap-4">
                       <Label htmlFor="flip-camera">Flip Camera</Label>
-                      <Switch id="flip-camera" />
+                      <Switch id="flip-camera" checked={camera.flip} onCheckedChange={camera.updateFlip} />
                     </div>
                   </AccordionContent>
                 </AccordionItem>
                 <Separator variant="thick" />
-                <AccordionItem
-                  value="microphone"
-                  className="shadow-none border-0 rounded-none"
-                >
-                  <AccordionTrigger className="bg-background">
-                    Microphone
-                  </AccordionTrigger>
+                <AccordionItem value="microphone" className="shadow-none border-0 rounded-none">
+                  <AccordionTrigger className="bg-background">Microphone</AccordionTrigger>
                   <AccordionContent className="bg-background p-6 space-y-5">
-                    <Select value={microphone} onValueChange={setMicrophone}>
+                    <Select value={microphone.device} onValueChange={microphone.changeDevice}>
                       <SelectTrigger className="">
                         <div className="flex items-center gap-2 flex-1">
-                          {microphone === "n/a" ? (
-                            <MicOffIcon size={20} />
-                          ) : (
-                            <MicIcon size={20} />
-                          )}
-                          {microphone === "n/a"
-                            ? "No Microphone"
-                            : microphones.find((m) => m.deviceId === microphone)
-                                ?.label || "Select Microphone"}
-                          {microphone === "n/a" ? (
-                            <Badge className="ml-auto rounded-full">Off</Badge>
-                          ) : null}
+                          {microphone.device === "n/a" ? <MicOffIcon size={20} /> : <MicIcon size={20} />}
+                          {microphone.device === "n/a" ? "No Microphone" : microphones.find((m) => m.deviceId === microphone.device)?.label}
+                          {microphone.device === "n/a" ? <Badge className="ml-auto rounded-full">Off</Badge> : null}
                         </div>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="n/a">No Microphone</SelectItem>
                         {microphones.map((microphone, index) => (
-                          <SelectItem
-                            key={microphone.deviceId}
-                            value={microphone.deviceId}
-                          >
+                          <SelectItem key={microphone.deviceId} value={microphone.deviceId}>
                             {microphone.label || `Microphone ${index + 1}`}
                           </SelectItem>
                         ))}
@@ -198,13 +125,8 @@ export function PluginCard() {
                   </AccordionContent>
                 </AccordionItem>
                 <Separator variant="thick" />
-                <AccordionItem
-                  value="advanced"
-                  className="shadow-none border-0 rounded-none"
-                >
-                  <AccordionTrigger className="bg-background">
-                    Toolbar
-                  </AccordionTrigger>
+                <AccordionItem value="advanced" className="shadow-none border-0 rounded-none">
+                  <AccordionTrigger className="bg-background">Toolbar</AccordionTrigger>
                   <AccordionContent className="bg-background p-6 space-y-5">
                     <div className="flex items-center justify-between gap-4">
                       <Label htmlFor="hide-toolbar">Enabled</Label>
@@ -240,16 +162,9 @@ export function PluginCard() {
             </CardContent>
             <Separator variant="thick" />
             <CardFooter className="pt-5">
-              <Button
-                className="w-full justify-between"
-                onClick={() => setRecording(!recording)}
-              >
+              <Button className="w-full justify-between" onClick={recorder.captureScreen}>
                 <span className="invisible text-xs">⌥⇧D</span>
-                {recording ? (
-                  <span className="font-bold">Stop Recording</span>
-                ) : (
-                  <span className="font-bold">Start Recording</span>
-                )}
+                <span className="font-bold">Start Recording</span>
                 <span className="visible text-xs">⌥⇧D</span>
               </Button>
             </CardFooter>
@@ -261,4 +176,6 @@ export function PluginCard() {
       </Card>
     </Draggable>
   );
-}
+});
+
+export { PluginCard };
