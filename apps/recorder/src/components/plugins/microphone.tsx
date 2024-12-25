@@ -1,6 +1,3 @@
-import WaveSurfer from "wavesurfer.js";
-import RecordPlugin from "wavesurfer.js/dist/plugins/record";
-
 import { MicIcon, MicOffIcon } from "lucide-react";
 import { observer } from "mobx-react";
 
@@ -10,31 +7,13 @@ import { Label } from "@screenify.io/ui/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@screenify.io/ui/components/ui/select";
 import { Switch } from "@screenify.io/ui/components/ui/switch";
 
+import { useAudioWaveform } from "@screenify.io/recorder/hooks/use-audio-waveform";
 import { useFetchUserMicrophoneDevices } from "@screenify.io/recorder/hooks/use-microphone";
 import { microphone } from "@screenify.io/recorder/store/microphone";
-import { useEffect, useRef } from "react";
 
 const MicrophonePlugin = observer(() => {
-  const waveform$ = useRef<HTMLDivElement>(null!);
   const microphones = useFetchUserMicrophoneDevices();
-
-  useEffect(() => {
-    if (!waveform$.current) return;
-
-    const wavesurfer = WaveSurfer.create({
-      container: waveform$.current,
-      waveColor: "violet",
-      progressColor: "purple",
-      cursorWidth: 1,
-      cursorColor: "black",
-      height: 150,
-      plugins: [RecordPlugin.create({})],
-    });
-
-    return () => {
-      wavesurfer.destroy();
-    };
-  }, []);
+  const waveform = useAudioWaveform(microphone.device);
 
   return (
     <AccordionItem value="microphone" className="shadow-none border-0 rounded-none">
@@ -64,7 +43,7 @@ const MicrophonePlugin = observer(() => {
           </Label>
           <Switch checked={microphone.pushToTalk} onCheckedChange={microphone.updatePushToTalk} id="push-to-talk" />
         </div>
-        <div id="waveform" ref={waveform$} className="w-full h-20 border border-border"></div>
+        {microphone.device !== "n/a" ? <canvas id="waveform" ref={waveform} className="w-full h-8" /> : null}
       </AccordionContent>
     </AccordionItem>
   );

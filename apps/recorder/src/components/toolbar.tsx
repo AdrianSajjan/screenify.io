@@ -14,6 +14,7 @@ import {
   WandIcon,
 } from "lucide-react";
 import { useRef } from "react";
+import { observer } from "mobx-react";
 
 import { Button } from "@screenify.io/ui/components/ui/button";
 import { Card } from "@screenify.io/ui/components/ui/card";
@@ -23,9 +24,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@scree
 import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dimensions";
 import { recorder } from "@screenify.io/recorder/store/recorder";
 import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
-import { observer } from "mobx-react";
 
-function _PluginToolbar() {
+const PluginToolbar = observer(() => {
   const toolbarRef = useRef<HTMLDivElement>(null!);
 
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
@@ -53,7 +53,7 @@ function _PluginToolbar() {
             <GripVerticalIcon id="toolbar-handle" size={16} />
           </div>
           <Separator orientation="vertical" variant="thick" />
-          <strong className="px-4 tabular-nums">00:00</strong>
+          <strong className="px-4 tabular-nums">{recorder.time}</strong>
           <Separator orientation="vertical" variant="thick" />
           <Tooltip>
             <TooltipTrigger asChild>
@@ -203,8 +203,6 @@ function _PluginToolbar() {
       </Card>
     </Draggable>
   );
-}
-
-const PluginToolbar = observer(_PluginToolbar);
+});
 
 export { PluginToolbar };
