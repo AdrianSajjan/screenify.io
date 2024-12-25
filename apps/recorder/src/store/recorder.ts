@@ -1,7 +1,9 @@
+import exportWebmBlob from "fix-webm-duration";
 import { makeAutoObservable } from "mobx";
 
 class Recorder {
-  status: "idle" | "active" | "pending" | "paused" | "error";
+  status: "idle" | "active" | "pending" | "saving" | "paused" | "error";
+  duration: number;
 
   private recorder: MediaRecorder | null;
   private chunks: Blob[];
@@ -9,6 +11,7 @@ class Recorder {
   constructor() {
     this.status = "idle";
     this.recorder = null;
+    this.duration = 0;
     this.chunks = [];
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -21,11 +24,16 @@ class Recorder {
     if (event.data.size > 0) this.chunks.push(event.data);
   }
 
+  private __exportWebmBlob(blob: Blob) {
+    const url = URL.createObjectURL(blob);
+    window.open(url);
+    this.status = "idle";
+  }
+
   private __recorderDataSaved() {
     const blob = new Blob(this.chunks, { type: "video/webm" });
-    const url = URL.createObjectURL(blob);
+    exportWebmBlob(blob, this.duration, this.__exportWebmBlob);
     this.chunks = [];
-    window.open(url);
   }
 
   private __captureStreamSuccess(stream: MediaStream) {
@@ -46,8 +54,12 @@ class Recorder {
   }
 
   stopScreenCapture() {
-    if (this.recorder?.state !== "inactive") this.recorder?.stop();
-    this.status = "idle";
+    if (!this.recorder || this.recorder.state === "inactive") {
+      this.status = "idle";
+    } else {
+      this.recorder.stop();
+      this.status = "saving";
+    }
   }
 
   pauseScreenCapture() {
