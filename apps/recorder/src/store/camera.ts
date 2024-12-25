@@ -8,9 +8,9 @@ type CameraEffects = "none" | "blur" | "image";
 
 class Camera {
   flip: boolean;
-  device: Autocomplete<"n/a">;
   effect: CameraEffects;
-  status: "idle" | "pending" | "initialized" | "error" = "idle";
+  device: Autocomplete<"n/a">;
+  status: "idle" | "pending" | "initialized" | "error";
 
   private video: HTMLVideoElement;
   private canvas: HTMLCanvasElement;
@@ -22,6 +22,7 @@ class Camera {
   constructor() {
     this.flip = true;
     this.effect = "none";
+    this.status = "idle";
     this.video = document.createElement("video");
     this.canvas = document.createElement("canvas");
     this.preview = document.createElement("canvas");
@@ -53,14 +54,14 @@ class Camera {
     return { offsetWidth, offsetHeight, offsetX, offsetY };
   }
 
-  private resizeCanvas() {
+  private __resizeCanvas() {
     this.canvas.width = this.video.videoWidth;
     this.canvas.height = this.video.videoHeight;
     this.preview.width = this.video.videoWidth;
     this.preview.height = this.video.videoHeight;
   }
 
-  private drawCanvas(source: CanvasImageSource) {
+  private __drawCanvas(source: CanvasImageSource) {
     const context = this.canvas.getContext("2d")!;
     const { offsetHeight, offsetWidth, offsetX, offsetY } = this.dimensions;
 
@@ -74,28 +75,29 @@ class Camera {
     }
   }
 
-  private async renderWithoutEffects() {
-    this.resizeCanvas();
-    this.drawCanvas(this.video);
-    this.tick = requestAnimationFrame(this.renderStream);
+  private async __renderWithoutEffects() {
+    this.__resizeCanvas();
+    this.__drawCanvas(this.video);
+    this.tick = requestAnimationFrame(this.__renderWithoutEffects);
   }
 
-  private async renderBlurBackground() {
-    this.resizeCanvas();
-    const segmenter = await this.createSelfieSegmentationModel();
+  private async __renderBlurBackground() {
+    const segmenter = await this.__createSelfieSegmentationModel();
     const segmentation = await segmenter.segmentPeople(this.video);
     await BodySegmentation.drawBokehEffect(this.preview, this.video, segmentation, 0.5, 5, 15, false);
-    this.drawCanvas(this.preview);
-    this.tick = requestAnimationFrame(this.renderStream);
+
+    this.__resizeCanvas();
+    this.__drawCanvas(this.preview);
+    this.tick = requestAnimationFrame(this.__renderBlurBackground);
   }
 
-  private async renderImageBackground() {
-    this.resizeCanvas();
-    this.drawCanvas(this.video);
-    this.tick = requestAnimationFrame(this.renderStream);
+  private async __renderImageBackground() {
+    this.__resizeCanvas();
+    this.__drawCanvas(this.video);
+    this.tick = requestAnimationFrame(this.__renderImageBackground);
   }
 
-  private async createSelfieSegmentationModel() {
+  private async __createSelfieSegmentationModel() {
     if (!this.segmenter) {
       this.segmenter = await BodySegmentation.createSegmenter(BodySegmentation.SupportedModels.MediaPipeSelfieSegmentation, {
         runtime: "mediapipe",
@@ -106,36 +108,36 @@ class Camera {
     return this.segmenter;
   }
 
-  private videoMetadataLoaded() {
+  private __videoMetadataLoaded() {
     this.video.play();
     this.status = "initialized";
-    this.renderStream();
+    this.__renderStream();
   }
 
-  private videoMetadataError() {
+  private __videoMetadataError() {
     this.status = "error";
   }
 
-  private createStreamSuccess(stream: MediaStream) {
-    this.video.addEventListener("loadedmetadata", this.videoMetadataLoaded, { once: true });
-    this.video.addEventListener("error", this.videoMetadataError, { once: true });
+  private __createStreamSuccess(stream: MediaStream) {
+    this.video.addEventListener("loadedmetadata", this.__videoMetadataLoaded, { once: true });
+    this.video.addEventListener("error", this.__videoMetadataError, { once: true });
     this.video.srcObject = stream;
   }
 
-  private createSteamError() {
+  private __createSteamError() {
     this.status = "error";
   }
 
-  private renderStream() {
+  private __renderStream() {
     switch (this.effect) {
       case "none":
-        this.renderWithoutEffects();
+        this.__renderWithoutEffects();
         break;
       case "blur":
-        this.renderBlurBackground();
+        this.__renderBlurBackground();
         break;
       case "image":
-        this.renderImageBackground();
+        this.__renderImageBackground();
         break;
     }
   }
@@ -151,7 +153,7 @@ class Camera {
     this.effect = effect;
     if (this.status === "initialized") {
       this.cancelStream();
-      this.renderStream();
+      this.__renderStream();
     }
     return this;
   }
@@ -171,7 +173,7 @@ class Camera {
     if (this.device !== "n/a") {
       this.status = "pending";
       const options = { video: { deviceId: this.device } };
-      navigator.mediaDevices.getUserMedia(options).then(this.createStreamSuccess).catch(this.createSteamError);
+      navigator.mediaDevices.getUserMedia(options).then(this.__createStreamSuccess).catch(this.__createSteamError);
     }
     return this;
   }

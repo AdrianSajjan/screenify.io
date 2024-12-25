@@ -1,9 +1,7 @@
 import { makeAutoObservable } from "mobx";
 
-type RecorderStatus = "idle" | "active" | "pending" | "paused" | "error";
-
 class Recorder {
-  status: RecorderStatus;
+  status: "idle" | "active" | "pending" | "paused" | "error";
 
   private recorder: MediaRecorder | null;
   private chunks: Blob[];
@@ -19,33 +17,32 @@ class Recorder {
     return new Recorder();
   }
 
-  private recorderDataAvailable(event: BlobEvent) {
+  private __recorderDataAvailable(event: BlobEvent) {
     if (event.data.size > 0) this.chunks.push(event.data);
   }
 
-  private recorderDataSaved() {
+  private __recorderDataSaved() {
     const blob = new Blob(this.chunks, { type: "video/webm" });
     const url = URL.createObjectURL(blob);
     this.chunks = [];
     window.open(url);
   }
 
-  private captureStreamSuccess(stream: MediaStream) {
+  private __captureStreamSuccess(stream: MediaStream) {
     this.status = "active";
-    this.recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
-    this.recorder.addEventListener("dataavailable", this.recorderDataAvailable);
-    this.recorder.addEventListener("stop", this.recorderDataSaved);
-    stream.getVideoTracks()[0].addEventListener("ended", this.stopScreenCapture);
+    this.recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9,opus" });
+    this.recorder.addEventListener("dataavailable", this.__recorderDataAvailable);
+    this.recorder.addEventListener("stop", this.__recorderDataSaved);
     this.recorder.start();
   }
 
-  private captureStreamError() {
+  private __captureStreamError() {
     this.status = "error";
   }
 
   captureScreen() {
     this.status = "pending";
-    navigator.mediaDevices.getDisplayMedia({ video: true }).then(this.captureStreamSuccess).catch(this.captureStreamError);
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then(this.__captureStreamSuccess).catch(this.__captureStreamError);
   }
 
   stopScreenCapture() {

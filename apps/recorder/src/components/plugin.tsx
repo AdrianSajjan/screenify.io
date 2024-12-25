@@ -1,8 +1,8 @@
 import Draggable from "react-draggable";
 
-import { useRef } from "react";
-import { GripHorizontalIcon, LayoutGridIcon, MicIcon, MicOffIcon, VideoIcon, VideoOffIcon } from "lucide-react";
+import { GripHorizontalIcon, LayoutGridIcon, VideoIcon, VideoOffIcon } from "lucide-react";
 import { observer } from "mobx-react";
+import { useRef } from "react";
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@screenify.io/ui/components/ui/accordion";
 import { Badge } from "@screenify.io/ui/components/ui/badge";
@@ -15,19 +15,17 @@ import { Switch } from "@screenify.io/ui/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@screenify.io/ui/components/ui/tabs";
 
 import { useFetchUserCameraDevices } from "@screenify.io/recorder/hooks/use-camera";
-import { useFetchUserMicrophoneDevices } from "@screenify.io/recorder/hooks/use-microphone";
 import { useWindowDimensions } from "@screenify.io/recorder/hooks/use-window-dimensions";
 
+import { MicrophonePlugin } from "@screenify.io/recorder/components/plugins/microphone";
+import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
 import { camera } from "@screenify.io/recorder/store/camera";
 import { recorder } from "@screenify.io/recorder/store/recorder";
-import { microphone } from "@screenify.io/recorder/store/microphone";
-import { SAFE_AREA_PADDING } from "@screenify.io/recorder/constants/layout";
 
 const PluginCard = observer(() => {
   const pluginRef = useRef<HTMLDivElement>(null!);
 
   const cameras = useFetchUserCameraDevices();
-  const microphones = useFetchUserMicrophoneDevices();
 
   const { height: screenHeight, width: screenWidth } = useWindowDimensions();
 
@@ -49,21 +47,23 @@ const PluginCard = observer(() => {
   return (
     <Draggable nodeRef={pluginRef} handle="#plugin-handle" defaultPosition={defaultPosition} bounds={bounds}>
       <Card ref={pluginRef} className="absolute p-0 bg-background w-full max-w-md overflow-hidden">
-        <CardHeader id="plugin-handle" className="grid place-items-center p-2 cursor-move">
-          <GripHorizontalIcon size={16} />
-        </CardHeader>
-        <Separator />
         <Tabs defaultValue="record">
-          <TabsList className="rounded-none border-none">
-            <TabsTrigger className="w-full" value="record">
-              <VideoIcon size={20} />
-              <span>Record</span>
-            </TabsTrigger>
-            <TabsTrigger className="w-full" value="video">
-              <LayoutGridIcon size={20} />
-              <span>Videos</span>
-            </TabsTrigger>
-          </TabsList>
+          <CardHeader className="p-0 space-y-0">
+            <div className="cursor-move w-full p-2 grid place-items-center" id="plugin-handle">
+              <GripHorizontalIcon size={16} />
+            </div>
+            <Separator />
+            <TabsList className="rounded-none border-none">
+              <TabsTrigger className="w-full" value="record">
+                <VideoIcon size={20} />
+                <span>Record</span>
+              </TabsTrigger>
+              <TabsTrigger className="w-full" value="video">
+                <LayoutGridIcon size={20} />
+                <span>Videos</span>
+              </TabsTrigger>
+            </TabsList>
+          </CardHeader>
           <Separator />
           <TabsContent value="record" className="mt-0">
             <CardContent className="p-0">
@@ -95,35 +95,7 @@ const PluginCard = observer(() => {
                   </AccordionContent>
                 </AccordionItem>
                 <Separator variant="thick" />
-                <AccordionItem value="microphone" className="shadow-none border-0 rounded-none">
-                  <AccordionTrigger className="bg-background">Microphone</AccordionTrigger>
-                  <AccordionContent className="bg-background p-6 space-y-5">
-                    <Select value={microphone.device} onValueChange={microphone.changeDevice}>
-                      <SelectTrigger className="">
-                        <div className="flex items-center gap-2 flex-1">
-                          {microphone.device === "n/a" ? <MicOffIcon size={20} /> : <MicIcon size={20} />}
-                          {microphone.device === "n/a" ? "No Microphone" : microphones.find((m) => m.deviceId === microphone.device)?.label}
-                          {microphone.device === "n/a" ? <Badge className="ml-auto rounded-full">Off</Badge> : null}
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="n/a">No Microphone</SelectItem>
-                        {microphones.map((microphone, index) => (
-                          <SelectItem key={microphone.deviceId} value={microphone.deviceId}>
-                            {microphone.label || `Microphone ${index + 1}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="flex items-center justify-between gap-4">
-                      <Label htmlFor="push-to-talk">
-                        <span>Push to Talk</span>&nbsp;
-                        <span className="text-xs">(⌥⇧U)</span>
-                      </Label>
-                      <Switch id="push-to-talk" />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
+                <MicrophonePlugin />
                 <Separator variant="thick" />
                 <AccordionItem value="advanced" className="shadow-none border-0 rounded-none">
                   <AccordionTrigger className="bg-background">Toolbar</AccordionTrigger>

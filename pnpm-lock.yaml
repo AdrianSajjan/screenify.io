@@ -114,6 +114,9 @@ importers:
       react-draggable:
         specifier: ^4.4.6
         version: 4.4.6(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      wavesurfer.js:
+        specifier: ^7.8.12
+        version: 7.8.12
     devDependencies:
       '@types/react':
         specifier: ^19.0.2
@@ -4138,6 +4141,9 @@ packages:
         optional: true
       yaml:
         optional: true
+
+  wavesurfer.js@7.8.12:
+    resolution: {integrity: sha512-Ovyv3ASEXXWmQVh3clpaZufkraRSg2Uv+28Z5zBHL4nB1HgTZ64lcFMUXX7yZlV5WAIN5ST9w3naaYmOdV2+iw==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -8282,6 +8288,8 @@ snapshots:
       fsevents: 2.3.3
       jiti: 2.4.2
       yaml: 2.6.1
+
+  wavesurfer.js@7.8.12: {}
 
   webidl-conversions@3.0.1: {}
 
