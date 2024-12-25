@@ -1,5 +1,5 @@
 import { CameraPreview } from "@screenify.io/recorder/components/camera";
-import { PluginCard } from "@screenify.io/recorder/components/plugin";
+import { PluginCard } from "@screenify.io/recorder/components/plugin/plugin";
 import { PluginToolbar } from "@screenify.io/recorder/components/toolbar";
 
 export default function App() {

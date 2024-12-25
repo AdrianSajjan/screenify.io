@@ -13,7 +13,7 @@ import { microphone } from "@screenify.io/recorder/store/microphone";
 
 const MicrophonePlugin = observer(() => {
   const microphones = useFetchUserMicrophoneDevices();
-  const waveform = useAudioWaveform(microphone.device);
+  const waveform = useAudioWaveform(microphone.device, microphone.pushToTalk);
 
   return (
     <AccordionItem value="microphone" className="shadow-none border-0 rounded-none">

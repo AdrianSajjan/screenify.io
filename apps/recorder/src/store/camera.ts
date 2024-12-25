@@ -10,6 +10,8 @@ class Camera {
   flip: boolean;
   effect: CameraEffects;
   device: Autocomplete<"n/a">;
+
+  stream: MediaStream | null;
   status: "idle" | "pending" | "initialized" | "error";
 
   private video: HTMLVideoElement;
@@ -21,12 +23,13 @@ class Camera {
 
   constructor() {
     this.flip = true;
+    this.stream = null;
+    this.device = "n/a";
     this.effect = "none";
     this.status = "idle";
     this.video = document.createElement("video");
     this.canvas = document.createElement("canvas");
     this.preview = document.createElement("canvas");
-    this.device = "n/a";
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -121,6 +124,7 @@ class Camera {
   private __createStreamSuccess(stream: MediaStream) {
     this.video.addEventListener("loadedmetadata", this.__videoMetadataLoaded, { once: true });
     this.video.addEventListener("error", this.__videoMetadataError, { once: true });
+    this.stream = stream;
     this.video.srcObject = stream;
   }
 
@@ -172,17 +176,20 @@ class Camera {
   createStream() {
     if (this.device !== "n/a") {
       this.status = "pending";
-      const options = { video: { deviceId: this.device } };
+      const options = { video: { deviceId: this.device }, audio: false };
       navigator.mediaDevices.getUserMedia(options).then(this.__createStreamSuccess).catch(this.__createSteamError);
     }
     return this;
   }
 
   cancelStream() {
-    if (this.tick) {
-      cancelAnimationFrame(this.tick);
-      this.tick = null;
-    }
+    if (this.tick) cancelAnimationFrame(this.tick);
+    if (this.stream) this.stream.getTracks().forEach((track) => track.stop());
+
+    this.tick = null;
+    this.stream = null;
+    this.video.srcObject = null;
+
     return this;
   }
 }

@@ -1,8 +1,10 @@
 import exportWebmBlob from "fix-webm-duration";
 import { makeAutoObservable, runInAction } from "mobx";
 import { RECORD_TIMEOUT } from "@screenify.io/recorder/constants/recorder";
+import { microphone } from "@screenify.io/recorder/store/microphone";
 
 class Recorder {
+  audio: boolean;
   timestamp: number;
   status: "idle" | "active" | "pending" | "saving" | "paused" | "error";
 
@@ -16,6 +18,7 @@ class Recorder {
   constructor() {
     this.status = "idle";
     this.timestamp = 0;
+    this.audio = false;
 
     this.recorder = null;
     this.chunks = [];
@@ -67,12 +70,20 @@ class Recorder {
     this.chunks = [];
   }
 
-  private __captureStreamSuccess(stream: MediaStream) {
+  private __captureStreamSuccess([video, audio]: [MediaStream, MediaStream | null]) {
     this.status = "active";
-    this.stream = stream;
-    this.recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9,opus" });
+    this.stream = video;
+
+    const combined = new MediaStream([
+      ...video.getVideoTracks(),
+      ...(audio ? audio.getAudioTracks() : []),
+      ...(this.audio ? video.getAudioTracks() : []),
+    ]);
+
+    this.recorder = new MediaRecorder(combined, { mimeType: "video/webm; codecs=vp9,opus" });
     this.recorder.addEventListener("dataavailable", this.__recorderDataAvailable);
     this.recorder.addEventListener("stop", this.__recorderDataSaved);
+
     this.recorder.start();
     this.__startTimer();
   }
@@ -82,10 +93,16 @@ class Recorder {
     this.__stopTimer(true);
   }
 
+  private __createStream() {
+    const constraints = { video: true, audio: true };
+    return navigator.mediaDevices.getDisplayMedia(constraints);
+  }
+
   startScreenCapture() {
     this.status = "pending";
     this.timeout = setTimeout(() => {
-      navigator.mediaDevices.getDisplayMedia({ video: true }).then(this.__captureStreamSuccess).catch(this.__captureStreamError);
+      const promise = [this.__createStream(), microphone.createStream()] as const;
+      Promise.all(promise).then(this.__captureStreamSuccess).catch(this.__captureStreamError);
     }, RECORD_TIMEOUT * 1000);
   }
 
