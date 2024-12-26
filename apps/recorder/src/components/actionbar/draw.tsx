@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@scree
 
 function DrawingActionbar() {
   return (
-    <Card className="w-fit bg-background overflow-hidden flex items-center h-10">
+    <Card className="w-fit bg-background overflow-hidden flex items-center h-10 pointer-events-auto">
       <TooltipProvider disableHoverableContent delayDuration={300}>
         <Tooltip>
           <TooltipTrigger asChild>

@@ -46,7 +46,7 @@ function PluginToolbar() {
 
   return (
     <Draggable nodeRef={toolbar$} handle="#toolbar-handle" defaultPosition={defaultPosition} bounds={bounds}>
-      <Card ref={toolbar$} className="w-fit absolute bg-background overflow-hidden flex items-center h-10">
+      <Card ref={toolbar$} className="w-fit absolute bg-background overflow-hidden flex items-center h-10 pointer-events-auto">
         <TooltipProvider disableHoverableContent delayDuration={500}>
           <div className="px-1.5 bg-primary/80 h-10 grid place-items-center cursor-move">
             <GripVerticalIcon id="toolbar-handle" size={16} />

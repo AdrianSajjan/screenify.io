@@ -48,7 +48,7 @@ const CameraPreview = observer(() => {
 
   return (
     <Draggable handle="#camera-handle" nodeRef={container$} defaultPosition={defaultPosition} bounds={bounds}>
-      <div ref={container$} className="absolute group">
+      <div ref={container$} className="absolute group pointer-events-auto">
         <button
           onClick={() => camera.changeDevice("n/a")}
           className="absolute top-3.5 left-3.5 bg-blank hover:bg-secondary-black h-8 w-8 rounded-full grid place-items-center transition-opacity opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto"

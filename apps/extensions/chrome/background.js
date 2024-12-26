@@ -1,17 +1,26 @@
 chrome.action.onClicked.addListener((tab) => {
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    func: injectExtention,
+    files: ["contentScript.js"],
   });
 });
 
-function injectExtention() {
+chrome.runtime.onMessage.addListener((message, sender) => {
+  chrome.scripting.executeScript({
+    target: { tabId: sender.tab.id },
+    func: injectExtention,
+    args: [message.colorScheme, message.backgroundColor],
+  });
+});
+
+function injectExtention(colorScheme) {
   const id = "screenify-container";
   const exists = document.getElementById(id);
+  const url = "build/" + (colorScheme || "index") + ".html";
 
   if (!exists) {
     const iframe = document.createElement("iframe");
-    iframe.src = chrome.runtime.getURL("build/index.html");
+    iframe.src = chrome.runtime.getURL(url);
 
     iframe.style.position = "fixed";
     iframe.style.height = "100%";

@@ -4,10 +4,17 @@ import path from "node:path";
 
 export default defineConfig({
   plugins: [react()],
+  base: "./",
   build: {
     outDir: "build",
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        light: "light.html",
+        dark: "dark.html",
+      },
+    },
   },
-  base: "./",
   resolve: {
     alias: {
       "@screenify.io/recorder": path.resolve(__dirname, "./src"),

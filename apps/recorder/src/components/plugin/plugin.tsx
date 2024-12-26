@@ -59,7 +59,7 @@ const PluginCard = observer(() => {
 
   return (
     <Draggable nodeRef={plugin$} handle="#plugin-handle" defaultPosition={defaultPosition} bounds={bounds}>
-      <div ref={plugin$} className="absolute w-full max-w-md">
+      <div ref={plugin$} className="absolute w-full max-w-md pointer-events-auto">
         <Card className="p-0 bg-background w-full overflow-hidden animate-in fade-in-0 zoom-in-75">
           <Tabs defaultValue="record" className="w-full">
             <CardHeader className="p-0 space-y-0">
