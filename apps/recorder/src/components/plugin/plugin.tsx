@@ -59,51 +59,53 @@ const PluginCard = observer(() => {
 
   return (
     <Draggable nodeRef={plugin$} handle="#plugin-handle" defaultPosition={defaultPosition} bounds={bounds}>
-      <Tabs ref={plugin$} defaultValue="record" className="w-full max-w-md">
-        <Card className="absolute p-0 bg-background w-full overflow-hidden animate-in fade-in-0 zoom-in-75">
-          <CardHeader className="p-0 space-y-0">
-            <div className="cursor-move w-full p-2 grid place-items-center" id="plugin-handle">
-              <GripHorizontalIcon size={16} />
-            </div>
+      <div ref={plugin$} className="absolute w-full max-w-md">
+        <Card className="p-0 bg-background w-full overflow-hidden animate-in fade-in-0 zoom-in-75">
+          <Tabs defaultValue="record" className="w-full">
+            <CardHeader className="p-0 space-y-0">
+              <div className="cursor-move w-full p-2 grid place-items-center" id="plugin-handle">
+                <GripHorizontalIcon size={16} />
+              </div>
+              <Separator />
+              <TabsList className="rounded-none border-none">
+                <TabsTrigger className="w-full" value="record">
+                  <VideoIcon size={20} />
+                  <span>Record</span>
+                </TabsTrigger>
+                <TabsTrigger className="w-full" value="video">
+                  <LayoutGridIcon size={20} />
+                  <span>Videos</span>
+                </TabsTrigger>
+              </TabsList>
+            </CardHeader>
             <Separator />
-            <TabsList className="rounded-none border-none">
-              <TabsTrigger className="w-full" value="record">
-                <VideoIcon size={20} />
-                <span>Record</span>
-              </TabsTrigger>
-              <TabsTrigger className="w-full" value="video">
-                <LayoutGridIcon size={20} />
-                <span>Videos</span>
-              </TabsTrigger>
-            </TabsList>
-          </CardHeader>
-          <Separator />
-          <TabsContent value="record" className="mt-0">
-            <CardContent className="p-0">
-              <Accordion type="multiple" className="w-full max-h-96 overflow-auto">
-                <CameraPlugin />
-                <Separator variant="thick" />
-                <MicrophonePlugin />
-                <Separator variant="thick" />
-                <ScreenPlugin />
-                <Separator variant="thick" />
-                <ToolbarPlugin />
-              </Accordion>
-            </CardContent>
-            <Separator variant="thick" />
-            <CardFooter className="pt-5">
-              <Button className="w-full justify-between" onClick={handleScreenCapture}>
-                <span className="invisible text-xs">⌥⇧D</span>
-                <span className="font-bold">{recorder.status === "pending" ? "Cancel Recording" : "Start Recording"}</span>
-                <span className="visible text-xs">⌥⇧D</span>
-              </Button>
-            </CardFooter>
-          </TabsContent>
-          <TabsContent value="video" className="mt-0">
-            <div className="p-8 grid place-items-center">Coming Soon!</div>
-          </TabsContent>
+            <TabsContent value="record" className="mt-0">
+              <CardContent className="p-0">
+                <Accordion type="multiple" className="w-full max-h-96 overflow-auto">
+                  <CameraPlugin />
+                  <Separator variant="thick" />
+                  <MicrophonePlugin />
+                  <Separator variant="thick" />
+                  <ScreenPlugin />
+                  <Separator variant="thick" />
+                  <ToolbarPlugin />
+                </Accordion>
+              </CardContent>
+              <Separator variant="thick" />
+              <CardFooter className="pt-5">
+                <Button className="w-full justify-between" onClick={handleScreenCapture}>
+                  <span className="invisible text-xs">⌥⇧D</span>
+                  <span className="font-bold">{recorder.status === "pending" ? "Cancel Recording" : "Start Recording"}</span>
+                  <span className="visible text-xs">⌥⇧D</span>
+                </Button>
+              </CardFooter>
+            </TabsContent>
+            <TabsContent value="video" className="mt-0">
+              <div className="p-8 grid place-items-center">Coming Soon!</div>
+            </TabsContent>
+          </Tabs>
         </Card>
-      </Tabs>
+      </div>
     </Draggable>
   );
 });

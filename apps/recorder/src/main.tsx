@@ -1,4 +1,5 @@
 import "@screenify.io/ui/globals.css";
+import "@screenify.io/recorder/styles.css";
 
 // import { scan } from "react-scan";
 import { StrictMode } from "react";
