@@ -8,6 +8,8 @@ type CameraEffects = "none" | "blur" | "image";
 
 class Camera {
   flip: boolean;
+  enabled: boolean;
+
   effect: CameraEffects;
   device: Autocomplete<"n/a">;
 
@@ -23,10 +25,13 @@ class Camera {
 
   constructor() {
     this.flip = true;
+    this.enabled = true;
+
     this.stream = null;
     this.device = "n/a";
     this.effect = "none";
     this.status = "idle";
+
     this.video = document.createElement("video");
     this.canvas = document.createElement("canvas");
     this.preview = document.createElement("canvas");
@@ -35,26 +40,6 @@ class Camera {
 
   static createInstance() {
     return new Camera();
-  }
-
-  private get dimensions() {
-    let offsetWidth, offsetHeight, offsetX, offsetY;
-    const videoAspect = this.video.videoWidth / this.video.videoHeight;
-    const canvasAspect = this.canvas.width / this.canvas.height;
-
-    if (videoAspect > canvasAspect) {
-      offsetWidth = this.canvas.height * videoAspect;
-      offsetHeight = this.canvas.height;
-      offsetX = -(offsetWidth - this.canvas.width) / 2;
-      offsetY = 0;
-    } else {
-      offsetWidth = this.canvas.width;
-      offsetHeight = this.canvas.width / videoAspect;
-      offsetX = 0;
-      offsetY = -(offsetHeight - this.canvas.height) / 2;
-    }
-
-    return { offsetWidth, offsetHeight, offsetX, offsetY };
   }
 
   private __resizeCanvas() {
@@ -66,16 +51,15 @@ class Camera {
 
   private __drawCanvas(source: CanvasImageSource) {
     const context = this.canvas.getContext("2d")!;
-    const { offsetHeight, offsetWidth, offsetX, offsetY } = this.dimensions;
+    context.save();
 
     if (this.flip) {
-      context.save();
       context.scale(-1, 1);
-      context.drawImage(source, -offsetWidth - offsetX, offsetY, offsetWidth, offsetHeight);
-      context.restore();
-    } else {
-      context.drawImage(source, offsetX, offsetY, offsetWidth, offsetHeight);
+      context.translate(-this.canvas.width, 0);
     }
+
+    context.drawImage(source, 0, 0, this.canvas.width, this.canvas.height);
+    context.restore();
   }
 
   private async __renderWithoutEffects() {
@@ -148,22 +132,28 @@ class Camera {
 
   changeDevice(device: Autocomplete<"n/a">) {
     this.device = device;
-    if (this.device === "n/a") this.cancelStream();
-    else this.createStream();
+    if (this.enabled) {
+      if (this.device === "n/a") this.cancelStream();
+      else this.createStream();
+    }
     return this;
   }
 
   updateEffect(effect: CameraEffects) {
     this.effect = effect;
     if (this.status === "initialized") {
-      this.cancelStream();
-      this.__renderStream();
+      this.cancelStream().__renderStream();
     }
     return this;
   }
 
   updateFlip(value: boolean | "toggle") {
     this.flip = value === "toggle" ? !this.flip : value;
+    return this;
+  }
+
+  updateEnabled(value: boolean | "toggle") {
+    this.enabled = value === "toggle" ? !this.enabled : value;
     return this;
   }
 

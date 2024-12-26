@@ -2,7 +2,9 @@ import { Autocomplete } from "@screenify.io/recorder/types/core";
 import { makeAutoObservable } from "mobx";
 
 class Microphone {
+  enabled: boolean;
   pushToTalk: boolean;
+
   device: Autocomplete<"n/a">;
   stream: MediaStream | null;
   status: "idle" | "pending" | "initialized" | "error";
@@ -11,6 +13,7 @@ class Microphone {
     this.device = "n/a";
     this.status = "idle";
     this.stream = null;
+    this.enabled = true;
     this.pushToTalk = false;
     makeAutoObservable(this, {}, { autoBind: true });
   }
@@ -57,17 +60,31 @@ class Microphone {
 
   changeDevice(value: Autocomplete<"n/a">) {
     this.device = value;
+    return this;
   }
 
   updatePushToTalk(value: boolean) {
     this.pushToTalk = value;
-    if (this.pushToTalk) {
-      this.__disableAudioTracks();
-      this.__setupEvents();
-    } else {
-      this.__removeEvents();
-      this.__enableAudioTracks();
+    if (this.enabled) {
+      if (this.pushToTalk) {
+        this.__disableAudioTracks();
+        this.__setupEvents();
+      } else {
+        this.__removeEvents();
+        this.__enableAudioTracks();
+      }
     }
+    return this;
+  }
+
+  updateEnabled(value: boolean | "toggle") {
+    this.enabled = value === "toggle" ? !this.enabled : value;
+    if (this.enabled) {
+      this.__enableAudioTracks();
+    } else {
+      this.__disableAudioTracks();
+    }
+    return this;
   }
 
   createStream() {
@@ -94,6 +111,7 @@ class Microphone {
     this.status = "idle";
     this.stream?.getTracks().forEach((track) => track.stop());
     this.stream = null;
+    return this;
   }
 }
 

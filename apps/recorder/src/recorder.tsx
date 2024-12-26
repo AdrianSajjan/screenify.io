@@ -1,6 +1,7 @@
 import { CameraPreview } from "@screenify.io/recorder/components/camera";
 import { PluginCard } from "@screenify.io/recorder/components/plugin/plugin";
-import { PluginToolbar } from "@screenify.io/recorder/components/toolbar";
+import { Timer } from "@screenify.io/recorder/components/timer";
+import { PluginToolbar } from "@screenify.io/recorder/components/toolbar/toolbar";
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <PluginCard />
       <PluginToolbar />
       <CameraPreview />
+      <Timer />
     </section>
   );
 }
