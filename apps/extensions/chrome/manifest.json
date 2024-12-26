@@ -1,0 +1,29 @@
+{
+    "manifest_version": 3,
+    "name": "Screenify.io",
+    "version": "1.0",
+    "description": "AI powered product demo video creator",
+    "permissions": [
+        "storage",
+        "declarativeContent",
+        "activeTab",
+        "scripting"
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "build/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "action": {}
+}
