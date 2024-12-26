@@ -6,10 +6,10 @@ chrome.action.onClicked.addListener((tab) => {
 });
 
 function initialize() {
-  const exists = document.getElementById("screenity-container");
+  const exists = document.getElementById("screenify-container");
   if (exists) return;
   const iframe = document.createElement("iframe");
-  iframe.id = "screenity-container";
+  iframe.id = "screenify-container";
   iframe.src = chrome.runtime.getURL("build/index.html");
   iframe.style.position = "fixed";
   iframe.style.height = "100%";
