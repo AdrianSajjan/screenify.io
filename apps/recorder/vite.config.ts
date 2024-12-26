@@ -8,12 +8,12 @@ export default defineConfig({
   build: {
     outDir: "build",
     rollupOptions: {
-      input: {
-        main: "index.html",
-        light: "light.html",
-        dark: "dark.html",
+      output: {
+        entryFileNames: "content.js",
+        assetFileNames: "styles.css",
       },
     },
+    cssCodeSplit: false,
   },
   resolve: {
     alias: {

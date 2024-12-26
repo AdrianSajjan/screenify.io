@@ -1,16 +1,18 @@
 import "@screenify.io/ui/globals.css";
 import "@screenify.io/recorder/styles.css";
 
-// import { scan } from "react-scan";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Recorder } from "@screenify.io/recorder/recorder";
 
-// if (typeof window !== "undefined") {
-//   scan({ enabled: import.meta.env.VITE_REACT_SCAN === "enabled" });
-// }
+const root = document.getElementById("screenify-app");
+if (root) document.removeChild(root);
 
-createRoot(document.getElementById("screenify-app")!).render(
+const app = document.createElement("div");
+app.id = "screenify-app";
+document.body.appendChild(app);
+
+createRoot(app).render(
   <StrictMode>
     <Recorder />
   </StrictMode>,

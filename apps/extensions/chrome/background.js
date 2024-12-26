@@ -1,40 +1,46 @@
 chrome.action.onClicked.addListener((tab) => {
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    files: ["contentScript.js"],
+    func: injectElementFromHTML,
   });
 });
 
-chrome.runtime.onMessage.addListener((message, sender) => {
-  chrome.scripting.executeScript({
-    target: { tabId: sender.tab.id },
-    func: injectExtention,
-    args: [message.colorScheme, message.backgroundColor],
-  });
-});
+async function injectElementFromHTML() {
+  const id = "screenify-app";
+  const response = await fetch(chrome.runtime.getURL("build/index.html"));
+  const htmlText = await response.text();
 
-function injectExtention(colorScheme) {
-  const id = "screenify-container";
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlText, "text/html");
+  const container = doc.getElementById(id);
   const exists = document.getElementById(id);
-  const url = "build/" + (colorScheme || "index") + ".html";
 
-  if (!exists) {
-    const iframe = document.createElement("iframe");
-    iframe.src = chrome.runtime.getURL(url);
+  const stylesheet = doc.getElementById("css");
+  const script = doc.getElementById("js");
 
-    iframe.style.position = "fixed";
-    iframe.style.height = "100%";
-    iframe.style.width = "100%";
-    iframe.style.top = "0";
-    iframe.style.left = "0";
-    iframe.style.zIndex = "9999999";
+  if (exists || !container || !stylesheet || !script) return;
 
-    iframe.style.borderWidth = "0 !important";
-    iframe.style.outlineWidth = "0 !important";
-    iframe.style.background = "transparent !important";
-    iframe.style.backgroundColor = "transparent !important";
+  const injectedNode = container.cloneNode(true);
+  const injectedScript = document.createElement("script");
+  const injectedStylesheet = document.createElement("link");
 
-    iframe.id = id;
-    document.body.appendChild(iframe);
-  }
+  injectedScript.src = chrome.runtime.getURL("build/assets/index-UU1_7n9Z.js");
+  injectedScript.type = "text/javascript";
+  injectedScript.onload = () => console.log("Injected script executed.");
+  document.head.appendChild(injectedScript);
+
+  injectedStylesheet.href = chrome.runtime.getURL(
+    "build/assets/index-BjOT7Qen.css",
+  );
+  injectedStylesheet.rel = "stylesheet";
+  document.head.appendChild(injectedStylesheet);
+
+  injectedNode.style.position = "fixed";
+  injectedNode.style.top = "0";
+  injectedNode.style.left = "0";
+  injectedNode.style.width = "100%";
+  injectedNode.style.height = "100%";
+  injectedNode.style.zIndex = "9999";
+
+  document.body.appendChild(injectedNode);
 }
